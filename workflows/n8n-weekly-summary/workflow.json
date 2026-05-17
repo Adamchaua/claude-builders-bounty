@@ -1,0 +1,119 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "interval": 1,
+              "dayOfWeek": [
+                5
+              ],
+              "hour": 17
+            }
+          ]
+        }
+      },
+      "id": "f8a7e4b1-6c2d-4e3a-8f90-1234567890ab",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "commit",
+        "operation": "list",
+        "owner": "={{$node[\"Config\"].json[\"github_owner\"]}}",
+        "repository": "={{$node[\"Config\"].json[\"github_repo\"]}}",
+        "filters": {
+          "since": "={{$node[\"DateHelper\"].json[\"last_week\"]}}"
+        }
+      },
+      "id": "a1b2c3d4-e5f6-4a5b-bc6d-7e8f9a0b1c2d",
+      "name": "GitHub Commits",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        500,
+        200
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "gh-cred-id",
+          "name": "GitHub Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "claude-sonnet-4-20250514",
+        "prompt": "=Generate a weekly narrative summary for repository {{$node[\"Config\"].json[\"github_repo\"]}} in {{$node[\"Config\"].json[\"language\"]}}.\nCommits: {{JSON.stringify($node[\"GitHub Commits\"].data)}}\nIssues: {{JSON.stringify($node[\"GitHub Issues\"].data)}}\nPRs: {{JSON.stringify($node[\"GitHub PRs\"].data)}}"
+      },
+      "id": "b2c3d4e5-f6a7-4b5c-cd7d-8e9f0a1b2c3d",
+      "name": "Claude AI",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        800,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "github_owner",
+              "value": "claude-builders-bounty"
+            },
+            {
+              "name": "github_repo",
+              "value": "claude-builders-bounty"
+            },
+            {
+              "name": "language",
+              "value": "EN"
+            }
+          ]
+        }
+      },
+      "id": "c3d4e5f6-a7b8-4c5d-de8e-9f0a1b2c3d4e",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        300,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "GitHub Commits",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
