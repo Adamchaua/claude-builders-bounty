@@ -48,12 +48,29 @@ def find_block_reason(command: str) -> str | None:
     return None
 
 
-def log_block(command: str, reason: str) -> None:
+def project_path(payload: dict[str, Any]) -> str:
+    """Return a project path from hook payload metadata when available."""
+    for key in ("cwd", "project_path", "workspace", "root"):
+        value = payload.get(key)
+        if isinstance(value, str) and value:
+            return value
+
+    metadata = payload.get("metadata") or {}
+    if isinstance(metadata, dict):
+        for key in ("cwd", "project_path", "workspace", "root"):
+            value = metadata.get(key)
+            if isinstance(value, str) and value:
+                return value
+
+    return str(Path.cwd())
+
+
+def log_block(command: str, reason: str, path: str) -> None:
     BLOCKED_LOG.parent.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now(timezone.utc).isoformat()
     sanitized = command.replace("\n", "\\n")
     with BLOCKED_LOG.open("a", encoding="utf-8") as log_file:
-        log_file.write(f"{timestamp}\treason={reason}\tcommand={sanitized}\n")
+        log_file.write(f"{timestamp}\treason={reason}\tproject_path={path}\tcommand={sanitized}\n")
 
 
 def main() -> int:
@@ -73,8 +90,9 @@ def main() -> int:
     if reason is None:
         return 0
 
-    log_block(command, reason)
-    print(f"Blocked dangerous bash command: {reason}", file=sys.stderr)
+    path = project_path(payload)
+    log_block(command, reason, path)
+    print(f"Blocked dangerous bash command: {reason}. See ~/.claude/hooks/blocked.log for details.", file=sys.stderr)
     return 1
 
 
