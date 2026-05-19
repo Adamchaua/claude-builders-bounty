@@ -32,7 +32,7 @@ def test_patterns() -> None:
     assert_blocked("TRUNCATE audit_log", "TRUNCATE")
     assert_blocked("DELETE FROM users;", "DELETE FROM without WHERE")
     assert_allowed("DELETE FROM users WHERE id = 1;")
-    assert_allowed("git push origin main --force-with-lease")
+    assert_blocked("git push origin main --force-with-lease", "git push --force")
     assert_allowed("rm -r ./build")
 
 
