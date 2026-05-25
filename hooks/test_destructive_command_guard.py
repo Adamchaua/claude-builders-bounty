@@ -33,6 +33,7 @@ class DestructiveCommandGuardTest(unittest.TestCase):
             "git status",
             "rm -r build",
             "git push origin main",
+            "git push origin feature/fix-login",
             "SELECT * FROM users",
             "DELETE FROM users WHERE id = 1",
         ]

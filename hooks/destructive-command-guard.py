@@ -26,7 +26,10 @@ BLOCK_RULES: list[tuple[str, re.Pattern[str], str]] = [
     ),
     (
         "force push",
-        re.compile(r"\bgit\s+push\b[^\n;&|]*(--force|-f|--force-with-lease)\b", re.IGNORECASE),
+        re.compile(
+            r"\bgit\s+push\b(?=[^\n;&|]*\s(?:--force|-f|--force-with-lease)(?:\s|$))",
+            re.IGNORECASE,
+        ),
         "Force-pushing can rewrite shared history. Require explicit human approval.",
     ),
     (
